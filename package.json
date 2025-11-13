@@ -1,0 +1,43 @@
+{
+  "name": "design-patterns",
+  "version": "1.0.0",
+  "description": "Geometric shapes application with Triangle and Sphere",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' 'tests/**/*.ts' --fix"
+  },
+  "keywords": [
+    "design-patterns",
+    "factory-method",
+    "geometry",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.1",
+    "@types/pino": "^7.0.4",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

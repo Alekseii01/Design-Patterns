@@ -1,0 +1,28 @@
+# Valid spheres (center X, Y, Z and radius)
+0 0 0 5
+1 2 3 4.5
+-3 -3 -3 2.7
+
+# Invalid data - not enough parameters
+1.0 2.0 3.0
+
+# Invalid data - character in number
+2a.0 3.0 4.0 5.0
+
+# Invalid data - negative radius
+1.0 2.0 3.0 -4.0
+
+# Valid sphere touching XY plane
+5 5 3 3
+
+# Invalid data - zero radius
+0 0 0 0
+
+# Valid sphere touching YZ plane
+4 2 2 4
+
+# Invalid data - too many parameters
+1.0 2.0 3.0 4.0 5.0 6.0
+
+# Valid sphere with center on XY plane
+2 2 0 1.5
