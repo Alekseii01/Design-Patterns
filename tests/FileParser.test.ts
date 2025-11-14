@@ -17,7 +17,6 @@ describe('FileParser', () => {
   });
 
   afterEach(() => {
-    // Очистка тестовых файлов
     if (fs.existsSync(testDataDir)) {
       const files = fs.readdirSync(testDataDir);
       files.forEach((file) => {
@@ -139,7 +138,6 @@ describe('FileParser', () => {
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual([0, 0, 0]);
-      // -0 и +0 должны быть численно равны 0 (используем == вместо ===)
       expect(result[1][0] == 0).toBe(true);
       expect(result[1][1] == 0).toBe(true);
       expect(result[1][2] == 0).toBe(true);
