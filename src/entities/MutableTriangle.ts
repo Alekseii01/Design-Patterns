@@ -2,30 +2,46 @@ import { Point } from './Point';
 import { Shape } from './Shape';
 import { IShapeCalculator } from '../interfaces/IShapeCalculator';
 
-export class Triangle extends Shape implements IShapeCalculator {
-  private readonly pointA: Point;
+export class MutableTriangle extends Shape implements IShapeCalculator {
+  private pointA: Point;
 
-  private readonly pointB: Point;
+  private pointB: Point;
 
-  private readonly pointC: Point;
+  private pointC: Point;
 
   constructor(id: string, name: string, pointA: Point, pointB: Point, pointC: Point) {
     super(id, name);
     this.pointA = pointA;
     this.pointB = pointB;
     this.pointC = pointC;
+    this.notifyObservers();
   }
 
   public getPointA(): Point {
     return this.pointA;
   }
 
+  public setPointA(point: Point): void {
+    this.pointA = point;
+    this.notifyObservers();
+  }
+
   public getPointB(): Point {
     return this.pointB;
   }
 
+  public setPointB(point: Point): void {
+    this.pointB = point;
+    this.notifyObservers();
+  }
+
   public getPointC(): Point {
     return this.pointC;
+  }
+
+  public setPointC(point: Point): void {
+    this.pointC = point;
+    this.notifyObservers();
   }
 
   public calculateArea(): number {
