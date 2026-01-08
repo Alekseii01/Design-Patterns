@@ -1,143 +1,179 @@
-import { ShapeRepository } from './repositories/ShapeRepository';
-import { MutableSphere } from './entities/MutableSphere';
-import { MutableTriangle } from './entities/MutableTriangle';
-import { Point } from './entities/Point';
-import { Warehouse } from './warehouse/Warehouse';
-import { ShapeByIdSpecification } from './specifications/ShapeByIdSpecification';
-import { ShapeByNameSpecification } from './specifications/ShapeByNameSpecification';
-import { ShapeInFirstQuadrantSpecification } from './specifications/ShapeInFirstQuadrantSpecification';
-import { ShapeByDistanceRangeSpecification } from './specifications/ShapeByDistanceRangeSpecification';
-import { ShapeByAreaRangeSpecification } from './specifications/ShapeByAreaRangeSpecification';
-import { ShapeByVolumeRangeSpecification } from './specifications/ShapeByVolumeRangeSpecification';
-import { ShapeIdComparator } from './comparators/ShapeIdComparator';
-import { ShapeNameComparator } from './comparators/ShapeNameComparator';
-import { ShapeByFirstPointXComparator } from './comparators/ShapeByFirstPointXComparator';
-
-/**
- * Demonstration of Repository Pattern with Specification and Observer patterns
- * 
- * This example shows:
- * 1. Repository pattern for CRUD operations
- * 2. Specification pattern for searching
- * 3. Comparator pattern for sorting
- * 4. Observer pattern with Warehouse (Singleton)
- * 5. Automatic calculation updates when shapes change
- */
-
-console.log('=== Shape Repository Demo ===\n');
-
-// Create repository and warehouse
-const repository = new ShapeRepository();
-const warehouse = Warehouse.getInstance();
-
-console.log('1. Adding shapes to repository:');
-// Add some shapes
-const sphere1 = new MutableSphere('s1', 'SmallSphere', new Point(1, 2, 3), 5);
-const sphere2 = new MutableSphere('s2', 'LargeSphere', new Point(-5, -5, -5), 10);
-const sphere3 = new MutableSphere('s3', 'MediumSphere', new Point(0, 0, 0), 7);
-
-const triangle1 = new MutableTriangle(
-  't1',
-  'RightTriangle',
-  new Point(0, 0, 0),
-  new Point(3, 0, 0),
-  new Point(0, 4, 0)
-);
-
-const triangle2 = new MutableTriangle(
-  't2',
-  'EquilateralTriangle',
-  new Point(1, 1, 1),
-  new Point(2, 1, 1),
-  new Point(1.5, 1.866, 1)
-);
-
-repository.add(sphere1);
-repository.add(sphere2);
-repository.add(sphere3);
-repository.add(triangle1);
-repository.add(triangle2);
-
-console.log(`✓ Added ${repository.size()} shapes to repository\n`);
-
-// Demonstrate Warehouse integration
-console.log('2. Warehouse stores characteristics automatically:');
-const sphere1Chars = warehouse.getCharacteristics('s1');
-console.log(`   SmallSphere - Area: ${sphere1Chars?.area?.toFixed(2)}, Volume: ${sphere1Chars?.volume?.toFixed(2)}`);
-
-const triangle1Chars = warehouse.getCharacteristics('t1');
-console.log(`   RightTriangle - Area: ${triangle1Chars?.area?.toFixed(2)}, Perimeter: ${triangle1Chars?.perimeter?.toFixed(2)}\n`);
-
-// Demonstrate Observer pattern
-console.log('3. Observer pattern - updating shape triggers recalculation:');
-console.log(`   Before: SmallSphere radius = 5, volume = ${sphere1Chars?.volume?.toFixed(2)}`);
-sphere1.setRadius(10);
-const updatedChars = warehouse.getCharacteristics('s1');
-console.log(`   After: SmallSphere radius = 10, volume = ${updatedChars?.volume?.toFixed(2)}\n`);
-
-// Demonstrate Specification pattern
-console.log('4. Specification pattern - searching shapes:');
-
-// Find by ID
-const byIdSpec = new ShapeByIdSpecification('s2');
-const foundById = repository.findBySpecification(byIdSpec);
-console.log(`   ✓ Find by ID 's2': ${foundById[0]?.getName()}`);
-
-// Find by name
-const byNameSpec = new ShapeByNameSpecification('RightTriangle');
-const foundByName = repository.findBySpecification(byNameSpec);
-console.log(`   ✓ Find by name 'RightTriangle': ${foundByName[0]?.getId()}`);
-
-// Find shapes in first quadrant (all coordinates >= 0)
-const firstQuadrantSpec = new ShapeInFirstQuadrantSpecification();
-const inFirstQuadrant = repository.findBySpecification(firstQuadrantSpec);
-console.log(`   ✓ Shapes in first quadrant: ${inFirstQuadrant.map(s => s.getName()).join(', ')}`);
-
-// Find shapes by distance from origin
-const distanceSpec = new ShapeByDistanceRangeSpecification(0, 5);
-const nearOrigin = repository.findBySpecification(distanceSpec);
-console.log(`   ✓ Shapes near origin (distance 0-5): ${nearOrigin.map(s => s.getName()).join(', ')}`);
-
-// Find shapes by area range
-const areaSpec = new ShapeByAreaRangeSpecification(0, 100);
-const smallAreaShapes = repository.findBySpecification(areaSpec);
-console.log(`   ✓ Shapes with small area (0-100): ${smallAreaShapes.map(s => s.getName()).join(', ')}`);
-
-// Find shapes by volume range
-const volumeSpec = new ShapeByVolumeRangeSpecification(1000, 5000);
-const mediumVolumeShapes = repository.findBySpecification(volumeSpec);
-console.log(`   ✓ Shapes with medium volume (1000-5000): ${mediumVolumeShapes.map(s => s.getName()).join(', ')}`);
-
-// Combine specifications
-const combinedSpec = new ShapeByIdSpecification('s1').or(new ShapeByIdSpecification('t1'));
-const combined = repository.findBySpecification(combinedSpec);
-console.log(`   ✓ Combined (s1 OR t1): ${combined.map(s => s.getName()).join(', ')}\n`);
-
-// Demonstrate Comparator pattern
-console.log('5. Comparator pattern - sorting shapes:');
-
-// Sort by ID
-const sortedById = repository.sort(ShapeIdComparator.compare);
-console.log(`   ✓ Sort by ID: ${sortedById.map(s => s.getId()).join(', ')}`);
-
-// Sort by name
-const sortedByName = repository.sort(ShapeNameComparator.compare);
-console.log(`   ✓ Sort by name: ${sortedByName.map(s => s.getName()).join(', ')}`);
-
-// Sort by X coordinate
-const sortedByX = repository.sort(ShapeByFirstPointXComparator.compare);
-console.log(`   ✓ Sort by X coord: ${sortedByX.map(s => s.getName()).join(', ')}\n`);
-
-// Demonstrate CRUD operations
-console.log('6. Repository CRUD operations:');
-console.log(`   Initial size: ${repository.size()}`);
-
-// Remove a shape
-repository.remove('s2');
-console.log(`   After removing 's2': ${repository.size()}`);
-
-// Verify warehouse also cleaned up
-const removedChars = warehouse.getCharacteristics('s2');
-console.log(`   ✓ Warehouse cleaned up: ${removedChars === undefined ? 'Yes' : 'No'}\n`);
-
-console.log('=== Demo Complete ===');
+import { DataProcessor } from './data-processor';
+import { DatabaseAdapter } from './adapters/database-adapter';
+import { ApiAdapter } from './adapters/api-adapter';
+import { FileAdapter } from './adapters/file-adapter';
+import { 
+  StatisticsVisitor, 
+  FilterVisitor, 
+  GroupingVisitor 
+} from './visitors/data-visitors';
+import { 
+  ExportVisitor, 
+  ValidationVisitor 
+} from './visitors/export-validation-visitors';
+export async function demonstrateDataProcessingSystem(): Promise<void> {
+  console.log(' Starting Data Processing System Demo\n');
+  const processor = new DataProcessor();
+  console.log(' Setting up data sources...');
+  const dbAdapter = new DatabaseAdapter({
+    host: 'localhost',
+    port: 5432,
+    database: 'sensors',
+    username: 'admin',
+    password: 'secret'
+  });
+  const apiAdapter = new ApiAdapter({
+    baseUrl: 'https://api.example.com',
+    apiKey: 'api-key-123',
+    timeout: 5000
+  }, '/sensors/latest');
+  const fileAdapter = new FileAdapter({
+    directory: './data',
+    filePattern: /\.json$/
+  });
+  processor.registerDataSource('database', dbAdapter);
+  processor.registerDataSource('weather-api', apiAdapter);
+  processor.registerDataSource('local-files', fileAdapter);
+  console.log(' Registered data sources:', processor.getDataSources().join(', '));
+  console.log();
+  try {
+    console.log(' Connecting to all data sources...');
+    await processor.connectToAllSources();
+    console.log();
+    console.log(' Loading data from all sources...');
+    const allRecords = await processor.loadDataFromAllSources();
+    console.log(` Total records loaded: ${allRecords.length}\n`);
+    console.log(' Processing data with Statistics Visitor...');
+    const statisticsVisitor = new StatisticsVisitor();
+    const statsResult = processor.processData(statisticsVisitor);
+    console.log('Statistics Results:', JSON.stringify(statsResult.result, null, 2));
+    console.log();
+    console.log(' Processing data with Filter Visitor...');
+    const filterVisitor = new FilterVisitor({
+      minValue: 20,
+      maxValue: 50,
+      sources: ['database', 'weather-api']
+    });
+    const filterResult = processor.processData(filterVisitor);
+    console.log('Filter Results:');
+    console.log(`- Original records: ${filterResult.result.originalCount}`);
+    console.log(`- Filtered records: ${filterResult.result.filteredCount}`);
+    console.log(`- Filter criteria:`, filterResult.result.criteria);
+    console.log();
+    console.log(' Processing data with Grouping Visitor (by source)...');
+    const groupingVisitor = new GroupingVisitor(GroupingVisitor.groupBySource());
+    const groupResult = processor.processData(groupingVisitor);
+    console.log('Grouping Results:');
+    console.log(`- Total groups: ${groupResult.result.totalGroups}`);
+    for (const [groupName, groupData] of Object.entries(groupResult.result.groups)) {
+      console.log(`  - ${groupName}: ${(groupData as any).count} records`);
+    }
+    console.log();
+    console.log(' Processing data with Export Visitor (JSON)...');
+    const exportVisitor = new ExportVisitor('json', { 
+      includeMetadata: true,
+      indentation: 2 
+    });
+    const exportResult = processor.processData(exportVisitor);
+    console.log('Export Results:');
+    console.log(`- Format: ${exportResult.result.format}`);
+    console.log(`- Record count: ${exportResult.result.recordCount}`);
+    console.log(`- Export size: ${exportResult.result.size} characters`);
+    console.log(`- First 200 chars: ${exportResult.result.exportedData.substring(0, 200)}...`);
+    console.log();
+    console.log(' Processing data with Validation Visitor...');
+    const validationVisitor = new ValidationVisitor({
+      valueRange: { min: 0, max: 100 },
+      customValidators: [
+        {
+          name: 'ID Format',
+          validator: (record) => record.id.length > 0,
+          message: 'ID should not be empty'
+        },
+        {
+          name: 'Timestamp Valid',
+          validator: (record) => record.timestamp instanceof Date && !isNaN(record.timestamp.getTime()),
+          message: 'Timestamp should be a valid date'
+        }
+      ]
+    });
+    const validationResult = processor.processData(validationVisitor);
+    console.log('Validation Results:');
+    console.log(`- Total records: ${validationResult.result.totalRecords}`);
+    console.log(`- Valid records: ${validationResult.result.validRecords}`);
+    console.log(`- Invalid records: ${validationResult.result.invalidRecords}`);
+    console.log(`- Validation rate: ${(validationResult.result.validationRate * 100).toFixed(1)}%`);
+    console.log();
+    console.log(' Processing with multiple visitors sequentially...');
+    const multipleResults = processor.processDataWithMultipleVisitors([
+      new StatisticsVisitor(),
+      new GroupingVisitor(GroupingVisitor.groupByHour()),
+      new ExportVisitor('csv')
+    ]);
+    console.log(` Processed with ${multipleResults.length} visitors`);
+    multipleResults.forEach((result, index) => {
+      console.log(`  ${index + 1}. ${result.type} - completed at ${result.timestamp.toISOString()}`);
+    });
+    console.log();
+    console.log('ℹSystem Information:');
+    const systemInfo = processor.getSystemInfo();
+    console.log(JSON.stringify(systemInfo, null, 2));
+  } catch (error) {
+    console.error('Error during demo:', error);
+  } finally {
+    console.log('\n Disconnecting from all data sources...');
+    await processor.disconnectFromAllSources();
+    console.log('Demo completed successfully!');
+  }
+}
+export async function demonstrateIndividualComponents(): Promise<void> {
+  console.log('\nIndividual Components Demo\n');
+  console.log(' Testing Database Adapter individually...');
+  const dbAdapter = new DatabaseAdapter({
+    host: 'localhost',
+    port: 5432,
+    database: 'test',
+    username: 'user',
+    password: 'pass'
+  });
+  try {
+    await dbAdapter.connect();
+    const dbData = await dbAdapter.fetchData();
+    console.log(`Database adapter fetched ${dbData.length} records`);
+    console.log('Sample record:', dbData[0]);
+    await dbAdapter.disconnect();
+  } catch (error) {
+    console.error('Database adapter error:', error);
+  }
+  console.log('\n Testing different export formats...');
+  const testData = [
+    {
+      id: 'test-001',
+      timestamp: new Date(),
+      value: 42.5,
+      metadata: { source: 'test', type: 'demo' }
+    },
+    {
+      id: 'test-002',
+      timestamp: new Date(Date.now() + 60000),
+      value: 38.2,
+      metadata: { source: 'test', type: 'demo' }
+    }
+  ];
+  const formats: Array<'json' | 'csv' | 'xml'> = ['json', 'csv', 'xml'];
+  for (const format of formats) {
+    console.log(`\nExport to ${format.toUpperCase()}:`);
+    const exportVisitor = new ExportVisitor(format);
+    exportVisitor.visitCollection(testData);
+    const result = exportVisitor.getResult();
+    console.log(`Size: ${result.result.size} characters`);
+    console.log(`Preview: ${result.result.exportedData.substring(0, 150)}...`);
+  }
+}
+export async function runFullDemo(): Promise<void> {
+  await demonstrateDataProcessingSystem();
+  await demonstrateIndividualComponents();
+}
+if (require.main === module) {
+  runFullDemo().catch(console.error);
+}
