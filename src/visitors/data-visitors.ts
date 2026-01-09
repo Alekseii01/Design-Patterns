@@ -26,7 +26,7 @@ export class StatisticsVisitor extends BaseDataVisitor {
     this.min = Math.min(this.min, value);
     this.max = Math.max(this.max, value);
   }
-  visitCollection(records: DataRecord[]): any {
+  visitCollection(_records: DataRecord[]): any {
     if (this.count === 0) {
       this.result.result = { error: 'No data to process' };
       return this.result.result;
