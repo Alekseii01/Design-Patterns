@@ -1,246 +1,123 @@
-# Data Processing System
+# Система автоматизации доставки
 
-A data processing system from different sources using **Adapter** and **Visitor** design patterns.
+Реализация системы автоматизации процесса доставки с использованием трех паттернов проектирования:
+- **Abstract Factory** - создание различных типов доставок
+- **Bridge** - разделение абстракции доставки и ее реализации
+- **Observer** - оповещение клиентов о статусе доставок
 
-## Description
+## Структура проекта
 
-This system demonstrates the implementation of two important design patterns:
+```
+src/
+├── bridge/
+│   ├── DeliveryAbstraction.ts      # Абстракция доставки (Bridge)
+│   └── DeliveryImplementation.ts   # Реализации доставки (Bridge)
+├── observer/
+│   ├── DeliveryStatus.ts           # Enum статусов доставки
+│   ├── Observer.ts                 # Интерфейс и реализации наблюдателей
+│   └── Subject.ts                  # Интерфейс и базовый класс субъекта
+├── factory/
+│   └── DeliveryFactory.ts          # Abstract Factory для создания доставок
+└── index.ts                         # Демонстрация работы системы
+```
 
-- **Adapter Pattern** - adapts interfaces of various data sources (database, API, files) to a unified standard interface
-- **Visitor Pattern** - allows adding new data processing operations without changing the structure of data classes
+## Паттерны проектирования
 
-## Architecture
+### 1. Abstract Factory (Абстрактная фабрика)
 
-### Core Components:
+Создает различные типы доставок:
+- `StandardDeliveryFactory` - стандартная доставка
+- `ExpressDeliveryFactory` - экспресс доставка
+- `InternationalDeliveryFactory` - международная доставка
 
-1. **Data Sources** (`src/data-sources/`):
-   - `DatabaseClient` - database client
-   - `ApiClient` - REST API client
-   - `FileReader` - file reader
+### 2. Bridge (Мост)
 
-2. **Adapters** (`src/adapters/`):
-   - `DatabaseAdapter` - adapts DatabaseClient to common interface
-   - `ApiAdapter` - adapts ApiClient to common interface  
-   - `FileAdapter` - adapts FileReader to common interface
+Разделяет абстракцию доставки (`DeliveryAbstraction`) от ее реализации (`DeliveryImplementation`):
 
-3. **Visitors** (`src/visitors/`):
-   - `StatisticsVisitor` - calculates data statistics
-   - `FilterVisitor` - filters data by criteria
-   - `GroupingVisitor` - groups data
-   - `ExportVisitor` - exports data to various formats
-   - `ValidationVisitor` - validates data
+**Реализации:**
+- `TruckDelivery` - доставка грузовиком
+- `AirDelivery` - доставка самолетом
+- `ShipDelivery` - доставка кораблем
+- `CourierDelivery` - доставка курьером
 
-4. **Main Classes**:
-   - `DataProcessor` - main system management class
-   - `DataCollection` - data collection with Visitor support
+### 3. Observer (Наблюдатель)
 
-## Quick Start
+Оповещает заинтересованные стороны об изменении статуса доставки:
 
-### Install Dependencies
+**Наблюдатели:**
+- `ClientObserver` - клиент, получающий уведомления
+- `LogisticsObserver` - логистическая система
 
+**Статусы доставки:**
+- CREATED - Создана
+- PROCESSING - В обработке
+- IN_TRANSIT - В пути
+- OUT_FOR_DELIVERY - Выехала на доставку
+- DELIVERED - Доставлена
+- FAILED - Не удалось доставить
+- CANCELLED - Отменена
+
+## Установка и запуск
+
+1. Установите зависимости:
 ```bash
 npm install
 ```
 
-### Build Project
-
+2. Скомпилируйте TypeScript:
 ```bash
 npm run build
 ```
 
-### Run Demo
-
+3. Запустите программу:
 ```bash
-npm run demo
+npm start
 ```
 
-### Development with Auto-restart
-
+Или запустите напрямую через ts-node:
 ```bash
 npm run dev
 ```
 
-## Usage
-
-### Basic Example
+## Пример использования
 
 ```typescript
-import { 
-  DataProcessor,
-  DatabaseAdapter,
-  ApiAdapter,
-  FileAdapter,
-  StatisticsVisitor,
-  FilterVisitor
-} from './src';
+import { StandardDeliveryFactory } from './factory/DeliveryFactory';
+import { TruckDelivery } from './bridge/DeliveryImplementation';
+import { ClientObserver } from './observer/Observer';
 
-const processor = new DataProcessor();
+// Создание фабрики
+const factory = new StandardDeliveryFactory();
 
-const dbAdapter = new DatabaseAdapter({
-  host: 'localhost',
-  port: 5432,
-  database: 'mydb',
-  username: 'user',
-  password: 'pass'
-});
-
-const apiAdapter = new ApiAdapter({
-  baseUrl: 'https://api.example.com',
-  apiKey: 'your-api-key',
-  timeout: 5000
-});
-
-processor.registerDataSource('database', dbAdapter);
-processor.registerDataSource('api', apiAdapter);
-
-await processor.connectToAllSources();
-await processor.loadDataFromAllSources();
-
-const statsResult = processor.processData(new StatisticsVisitor());
-console.log('Statistics:', statsResult.result);
-
-const filteredResult = processor.processData(
-  new FilterVisitor({ minValue: 10, maxValue: 100 })
+// Создание доставки
+const delivery = factory.createDelivery(
+  new TruckDelivery(),
+  'Ноутбук',
+  'Москва, ул. Ленина, д. 10'
 );
-console.log('Filtered data:', filteredResult.result);
+
+// Подписка наблюдателя
+const client = new ClientObserver('Иван', 'ivan@example.com');
+delivery.attach(client);
+
+// Запуск доставки
+delivery.processDelivery(delivery.getPackageInfo(), delivery.getDestination());
 ```
 
-### Creating Custom Visitor
+## Особенности реализации
 
-```typescript
-import { BaseDataVisitor, DataRecord } from './src';
+1. **Гибкость Bridge**: Можно изменять реализацию доставки (способ транспортировки) на лету без изменения абстракции.
 
-class CustomVisitor extends BaseDataVisitor {
-  private customData: any[] = [];
+2. **Расширяемость Abstract Factory**: Легко добавить новые типы доставок, создав новую фабрику.
 
-  visitRecord(record: DataRecord): void {
-    if (record.value > 50) {
-      this.customData.push({
-        id: record.id,
-        processedValue: record.value * 2
-      });
-    }
-  }
+3. **Множественные наблюдатели**: Один объект доставки может иметь несколько наблюдателей (клиенты, логистика, администрация и т.д.).
 
-  visitCollection(records: DataRecord[]): any {
-    this.result.result = {
-      processedRecords: this.customData,
-      totalProcessed: this.customData.length
-    };
-    return this.result.result;
-  }
-}
+4. **Автоматические уведомления**: При изменении статуса доставки все наблюдатели автоматически получают уведомления.
 
-const customResult = processor.processData(new CustomVisitor());
-```
+## Технологии
 
-## Adapter Configuration
+- TypeScript 5.0+
+- Node.js
 
-### Database
-```typescript
-const dbConfig = {
-  host: 'localhost',
-  port: 5432,
-  database: 'sensors',
-  username: 'admin',
-  password: 'secret'
-};
-const dbAdapter = new DatabaseAdapter(dbConfig);
-```
 
-### API
-```typescript
-const apiConfig = {
-  baseUrl: 'https://api.weather.com',
-  apiKey: 'your-api-key',
-  timeout: 5000
-};
-const apiAdapter = new ApiAdapter(apiConfig, '/data/latest');
-```
 
-### Files
-```typescript
-const fileConfig = {
-  directory: './data',
-  filePattern: /\.json$/
-};
-const fileAdapter = new FileAdapter(fileConfig);
-```
-
-## Built-in Visitors
-
-### StatisticsVisitor
-Calculates statistics: average, median, min/max, standard deviation
-
-### FilterVisitor
-Filters data by criteria:
-- Value ranges
-- Time periods
-- Data sources
-- Custom functions
-
-### GroupingVisitor
-Groups data by:
-- Data source
-- Time periods (hour, day)
-- Value ranges
-- Custom criteria
-
-### ExportVisitor
-Exports data to formats:
-- JSON
-- CSV  
-- XML
-
-### ValidationVisitor
-Validates data according to rules:
-- Required fields
-- Value ranges
-- Time constraints
-- Custom validators
-
-## Testing
-
-```bash
-npm test
-npm run test:watch
-npm test -- --coverage
-```
-
-## Project Structure
-
-```
-src/
-├── adapters/           
-├── data-sources/       
-├── visitors/           
-├── data-collection.ts  
-├── data-processor.ts   
-├── types.ts           
-├── demo.ts            
-└── index.ts           
-```
-
-## Design Patterns
-
-### Adapter Pattern
-Allows objects with incompatible interfaces to work together. In our system, adapters bring various data sources to a unified `DataSource` interface.
-
-### Visitor Pattern  
-Allows adding new operations to objects without changing their structure. Visitors can process data in various ways without modifying `DataRecord` or `DataCollection` classes.
-
-## System Extension
-
-### Adding New Data Source
-1. Create data source class in `src/data-sources/`
-2. Create corresponding adapter in `src/adapters/`
-3. Register adapter in `DataProcessor`
-
-### Adding New Visitor
-1. Inherit from `BaseDataVisitor`
-2. Implement `visitRecord` and `visitCollection` methods
-3. Use with `DataProcessor.processData()`
-
-## License
-
-MIT License
