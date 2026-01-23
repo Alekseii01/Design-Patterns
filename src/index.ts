@@ -3,24 +3,17 @@ import { TruckDelivery, AirDelivery, ShipDelivery, CourierDelivery } from './bri
 import { ClientObserver, LogisticsObserver } from './observer/Observer';
 import { DeliveryStatus } from './observer/DeliveryStatus';
 
-/**
- * Демонстрация работы системы доставки с использованием
- * паттернов Abstract Factory, Bridge и Observer
- */
 function main() {
   console.log('=== Система автоматизации доставки ===\n');
 
-  // Создание наблюдателей
   const client1 = new ClientObserver('Иван Петров', 'ivan@example.com');
   const client2 = new ClientObserver('Мария Сидорова', 'maria@example.com');
   const logisticsSystem = new LogisticsObserver();
 
-  // Создание фабрик (Abstract Factory)
   const standardFactory = new StandardDeliveryFactory();
   const expressFactory = new ExpressDeliveryFactory();
   const internationalFactory = new InternationalDeliveryFactory();
 
-  // Создание реализаций доставки (Bridge)
   const truckDelivery = new TruckDelivery();
   const airDelivery = new AirDelivery();
   const shipDelivery = new ShipDelivery();
@@ -80,7 +73,6 @@ function main() {
     
     console.log(`Изначальный тип транспорта: ${delivery4.getTransportType()}`);
     
-    // Демонстрация Bridge - изменение реализации на лету
     delivery4.setImplementation(truckDelivery);
     console.log(`Измененный тип транспорта: ${delivery4.getTransportType()}`);
     
@@ -89,5 +81,4 @@ function main() {
   }, 6000);
 }
 
-// Запуск демонстрации
 main();

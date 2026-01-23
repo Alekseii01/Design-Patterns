@@ -1,16 +1,9 @@
 import { DeliveryStatus } from './DeliveryStatus';
 
-/**
- * Observer Pattern - Observer Interface
- * Интерфейс для наблюдателей, которые будут получать уведомления
- */
 export interface Observer {
   update(deliveryId: string, status: DeliveryStatus, message?: string): void;
 }
 
-/**
- * Конкретный наблюдатель - Клиент
- */
 export class ClientObserver implements Observer {
   private name: string;
   private email: string;
@@ -34,9 +27,6 @@ export class ClientObserver implements Observer {
   }
 }
 
-/**
- * Конкретный наблюдатель - Логистическая система
- */
 export class LogisticsObserver implements Observer {
   update(deliveryId: string, status: DeliveryStatus, message?: string): void {
     console.log(`Логистическая система: Доставка #${deliveryId} - ${status}`);

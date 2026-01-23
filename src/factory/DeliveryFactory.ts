@@ -4,10 +4,6 @@ import { DeliveryStatus } from '../observer/DeliveryStatus';
 import { Observer } from '../observer/Observer';
 import { Subject } from '../observer/Subject';
 
-/**
- * Abstract Factory Pattern - Abstract Factory
- * Абстрактная фабрика для создания различных типов доставок
- */
 export abstract class DeliveryFactory {
   abstract createDelivery(
     implementation: DeliveryImplementation,
@@ -16,9 +12,6 @@ export abstract class DeliveryFactory {
   ): Delivery;
 }
 
-/**
- * Конкретная доставка, объединяющая Bridge и Observer
- */
 export class Delivery extends DeliveryAbstraction implements Subject {
   private deliveryId: string;
   private packageInfo: string;
@@ -76,7 +69,6 @@ export class Delivery extends DeliveryAbstraction implements Subject {
     return this.destination;
   }
 
-  // Observer methods (Subject interface)
   attach(observer: Observer): void {
     const isExist = this.observers.includes(observer);
     if (isExist) {
@@ -100,9 +92,6 @@ export class Delivery extends DeliveryAbstraction implements Subject {
   }
 }
 
-/**
- * Конкретная фабрика - Стандартная доставка
- */
 export class StandardDeliveryFactory extends DeliveryFactory {
   createDelivery(
     implementation: DeliveryImplementation,
@@ -113,9 +102,6 @@ export class StandardDeliveryFactory extends DeliveryFactory {
   }
 }
 
-/**
- * Конкретная фабрика - Экспресс доставка
- */
 export class ExpressDeliveryFactory extends DeliveryFactory {
   createDelivery(
     implementation: DeliveryImplementation,
@@ -123,14 +109,10 @@ export class ExpressDeliveryFactory extends DeliveryFactory {
     destination: string
   ): Delivery {
     const delivery = new Delivery(implementation, packageInfo, destination);
-    // Экспресс доставка может иметь дополнительные настройки
     return delivery;
   }
 }
 
-/**
- * Конкретная фабрика - Международная доставка
- */
 export class InternationalDeliveryFactory extends DeliveryFactory {
   createDelivery(
     implementation: DeliveryImplementation,
@@ -138,7 +120,6 @@ export class InternationalDeliveryFactory extends DeliveryFactory {
     destination: string
   ): Delivery {
     const delivery = new Delivery(implementation, packageInfo, destination);
-    // Международная доставка может иметь дополнительные настройки
     return delivery;
   }
 }

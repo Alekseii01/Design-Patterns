@@ -1,6 +1,3 @@
-/**
- * Enum для статусов доставки
- */
 export enum DeliveryStatus {
   CREATED = 'Создана',
   PROCESSING = 'В обработке',

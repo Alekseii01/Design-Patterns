@@ -1,9 +1,5 @@
 import { DeliveryImplementation } from './DeliveryImplementation';
 
-/**
- * Bridge Pattern - Abstraction
- * Абстракция доставки, которая использует реализацию через мост
- */
 export abstract class DeliveryAbstraction {
   protected implementation: DeliveryImplementation;
 
